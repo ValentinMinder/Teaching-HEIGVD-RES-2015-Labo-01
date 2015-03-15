@@ -9,6 +9,7 @@ import ch.heigvd.res.lab01.quotes.QuoteClient;
 import ch.heigvd.res.lab01.quotes.Quote;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
@@ -83,6 +84,8 @@ public class Application implements IApplication {
   @Override
   public void fetchAndStoreQuotes(int numberOfQuotes) throws IOException {
     clearOutputDirectory();
+    new File(WORKSPACE_DIRECTORY).mkdirs();
+    
     QuoteClient client = new QuoteClient();
     for (int i = 0; i < numberOfQuotes; i++) {
       Quote quote = client.fetchQuote();
@@ -92,6 +95,7 @@ public class Application implements IApplication {
        * one method provided by this class, which is responsible for storing the content of the
        * quote in a text file (and for generating the directories based on the tags).
        */
+      storeQuote(quote, "quote-" + i + ".utf8");
       LOG.info(quote.getSource());
       for (String tag : quote.getTags()) {
         LOG.info("> " + tag);
@@ -125,7 +129,19 @@ public class Application implements IApplication {
    * @throws IOException 
    */
   void storeQuote(Quote quote, String filename) throws IOException {
-    throw new UnsupportedOperationException("The student has not implemented this method yet.");
+      String path = WORKSPACE_DIRECTORY;
+      String[] tags = quote.getTags();
+      for (String tag : tags) {
+          path += File.separator + tag;
+      }
+      File fileDirectory = new File(path);
+      fileDirectory.mkdirs();
+      File actualFile = new File(fileDirectory, filename);
+      actualFile.createNewFile();
+
+      FileWriter writer = new FileWriter(actualFile);
+      writer.write(quote.getQuote());
+
   }
   
   /**
@@ -137,18 +153,23 @@ public class Application implements IApplication {
     explorer.explore(new File(WORKSPACE_DIRECTORY), new IFileVisitor() {
       @Override
       public void visit(File file) {
-        /*
-         * There is a missing piece here. Notice how we use an anonymous class here. We provide the implementation
-         * of the the IFileVisitor interface inline. You just have to add the body of the visit method, which should
-         * be pretty easy (we want to write the filename, including the path, to the writer passed in argument).
-         */
+              /*
+              * There is a missing piece here. Notice how we use an anonymous class here. We provide the implementation
+              * of the the IFileVisitor interface inline. You just have to add the body of the visit method, which should
+              * be pretty easy (we want to write the filename, including the path, to the writer passed in argument).
+              */
+          try {
+              writer.write(file.getPath() + "\n");
+          } catch (IOException ex) {
+              Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
+          }
       }
     });
   }
   
   @Override
   public String getAuthorEmail() {
-    throw new UnsupportedOperationException("The student has not implemented this method yet.");
+    return "first.last@heig-vd.ch";
   }
 
   @Override
